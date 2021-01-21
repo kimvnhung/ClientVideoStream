@@ -1,0 +1,104 @@
+﻿<Application x:Class="ClientVideoStream.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ClientVideoStream"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <system:Double x:Key="NormalButtonWidth">100</system:Double>
+            <system:Double x:Key="NormalButtonHeight">35</system:Double>
+
+            <Style TargetType="TextBox" x:Key="NormalTextBox">
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                BorderThickness="1"
+                                BorderBrush="#FF484946">
+                                <ScrollViewer x:Name="PART_ContentHost">
+
+                                </ScrollViewer>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+            <Style TargetType="Label" x:Key="LabelDefault">
+                <Setter Property="Foreground" Value="#FF282828"/>
+                <Setter Property="FontFamily" Value="Roboto"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+            <Style
+                 x:Key="NormalButton"
+                 TargetType="Button">
+                <Setter Property="Width" Value="{StaticResource NormalButtonWidth}"/>
+                <Setter Property="Height" Value="{StaticResource NormalButtonHeight}"/>
+                <Setter Property="Background" Value="#FFBEBEBE"/>
+                <Setter Property="Foreground" Value="#FF323232"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                     CornerRadius="4"
+                                     BorderThickness="1"
+                                     BorderBrush="#FF6D6E71">
+                                <ContentPresenter 
+                                     HorizontalAlignment="Center" 
+                                     VerticalAlignment="Center">
+
+                                </ContentPresenter>
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="0"
+                                                       Color="#231F20"
+                                                       Opacity="0.75"
+                                                       BlurRadius="1.4"/>
+                                </Border.Effect>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#1E428A"/>
+                        <Setter Property="Foreground" Value="#FABE3C"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                             CornerRadius="4"
+                                             BorderThickness="1"
+                                             BorderBrush="#202733">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                        </ContentPresenter>
+                                        <Border.Effect>
+                                            <DropShadowEffect ShadowDepth="0"
+                                                               Color="#231F20"
+                                                               Opacity="0.75"
+                                                               BlurRadius="1.4"/>
+                                        </Border.Effect>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.2"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="Opacity" Value="1"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
