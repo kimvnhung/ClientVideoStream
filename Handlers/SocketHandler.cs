@@ -78,7 +78,7 @@ namespace ClientVideoStream.Handlers
                 if (s == null)
                 {
                     Console.WriteLine("Connection failed");
-                    return "";
+                    return null;
                 }
 
                 // Receive the server home page content.
