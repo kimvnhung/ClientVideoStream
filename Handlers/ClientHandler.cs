@@ -209,6 +209,7 @@ namespace ClientVideoStream.Handlers
                     Console.WriteLine(ex.Message);
                     if (ex.ErrorCode != 10004)
                     {
+                        
                         Utils.showMessage(ex.Message, "Lỗi");
                     }
 

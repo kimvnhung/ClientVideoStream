@@ -24,6 +24,7 @@ namespace ClientVideoStream.Models
         private MyLogger logger;
         private VlcMediaPlayer _mediaPlayer;
         private ClientHandler clientHandler; 
+
         #endregion
         #region Properties
 
@@ -147,15 +148,30 @@ namespace ClientVideoStream.Models
             }
             return true;
         }
+
+        public async Task<bool> StartStream()
+        {
+            if (IsConnected && Client.IsActive)
+            {
+                Client.StartStream();
+                await Task.Delay(100);
+                if(Status == ProgramStatus.STREAMING)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         #endregion
 
         #region Listeners
-        public void OnStatusChanged(object sender,ProgramStatus newValue)
+        public void OnStatusChanged(object sender, ProgramStatus newValue)
         {
             Console.WriteLine("IsConnectionChanged :" + newValue.ToString());
             Status = newValue;
         }
         #endregion
+
         #region Implementations
         public event PropertyChangedEventHandler PropertyChanged;
 

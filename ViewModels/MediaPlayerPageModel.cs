@@ -1,4 +1,5 @@
-﻿using ClientVideoStream.Models;
+﻿using ClientVideoStream.Handlers;
+using ClientVideoStream.Models;
 using ClientVideoStream.ViewModels.Command;
 using System;
 using System.Collections.Generic;
@@ -57,12 +58,23 @@ namespace ClientVideoStream.ViewModels
 
         private async Task Start()
         {
-            var currentAssembly = Assembly.GetEntryAssembly();
-            var currentDirectory = new FileInfo(currentAssembly.Location).DirectoryName;
-            // Default installation path of VideoLAN.LibVLC.Windows
-            var libDirectory = new DirectoryInfo(Path.Combine(currentDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
-            _controller.SourceProvider.CreatePlayer(libDirectory);
-            _controller.SourceProvider.MediaPlayer.Play(new Uri(MainModel.Link));
+            if(_model.Status != ProgramStatus.STREAMING)
+            {
+                var currentAssembly = Assembly.GetEntryAssembly();
+                var currentDirectory = new FileInfo(currentAssembly.Location).DirectoryName;
+                // Default installation path of VideoLAN.LibVLC.Windows
+                var libDirectory = new DirectoryInfo(Path.Combine(currentDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
+                _controller.SourceProvider.CreatePlayer(libDirectory);
+                var rs = await _model.StartStream();
+                if (rs)
+                {
+                    Console.WriteLine("Starting streaming");
+                    //to start open stream on Link
+                    _controller.SourceProvider.MediaPlayer.Play(new Uri($"rtsp://{MainModel.Link}:2020/test"));
+                }
+
+            }
+
         }
 
         private void OnMouseClick(Point position)
