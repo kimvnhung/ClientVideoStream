@@ -1,4 +1,5 @@
-﻿using ClientVideoStream.Models;
+﻿using ClientVideoStream.Handlers;
+using ClientVideoStream.Models;
 using ClientVideoStream.Pages;
 using ClientVideoStream.ViewModels.Command;
 using System;
@@ -36,7 +37,19 @@ namespace ClientVideoStream.ViewModels
         #region Methods
         private async Task Start()
         {
-            Session.Navigator.Navigate(new MediaPlayerPage());
+            if(_model.Link.Length > 0)
+            {
+                _model.Client = new ClientHandler(_model.Link);
+                var rs = await _model.EstablisConnection();
+                if (rs)
+                {
+                    Session.Navigator.Navigate(new MediaPlayerPage());
+                }
+            }
+            else
+            {
+                Utils.showMessage("Địa chỉ rỗng!", "Thông báo!");
+            }
         }
         #endregion
     }

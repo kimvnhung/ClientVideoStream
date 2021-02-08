@@ -1,4 +1,5 @@
 ﻿
+using ClientVideoStream.Handlers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,12 +14,66 @@ namespace ClientVideoStream.Models
     class MainModel : INotifyPropertyChanged
     {
         #region Memebers
-        private MyLogger logger;
-        private string _link = "";
         private bool _isPlaying = false;
+        private bool _isConnected = false;
+
+        private string _link = "";
+
+        private ProgramStatus status = ProgramStatus.UNKNOWN;
+
+        private MyLogger logger;
         private VlcMediaPlayer _mediaPlayer;
+        private ClientHandler clientHandler; 
         #endregion
         #region Properties
+
+        public ProgramStatus Status
+        {
+            get => this.status;
+            set
+            {
+                if(value != this.status)
+                {
+                    this.status = value;
+                    OnPropertyChanged(nameof(Status));
+                    if (value == ProgramStatus.UNKNOWN)
+                    {
+                        IsConnected = false;
+                    }
+                    else
+                    {
+                        IsConnected = true;
+                    }
+                }
+            }
+        }
+
+        public bool IsConnected
+        {
+            get => this._isConnected;
+            set
+            {
+                if( value != this._isConnected)
+                {
+                    this._isConnected = value;
+                    OnPropertyChanged(nameof(IsConnected));
+                }
+            }
+        }
+
+        public ClientHandler Client
+        {
+            get => this.clientHandler;
+            set
+            {
+                if (!value.Equals(this.clientHandler))
+                {
+                    this.clientHandler = value;
+                    OnPropertyChanged(nameof(Client));
+                    Client.IsStatusChanged = OnStatusChanged;
+                }
+            }
+        }
 
         public bool IsPlaying
         {
@@ -73,6 +128,33 @@ namespace ClientVideoStream.Models
 
         #endregion
         #region Methods
+        public async Task<bool> EstablisConnection()
+        {
+            Client.StartConnection();
+            int count = 5;
+            while (count-- > 0)
+            {
+                Client.EstablishConnection();
+                await Task.Delay(100);
+                if (IsConnected)
+                {
+                    break;
+                }
+                if(count == 1)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        #endregion
+
+        #region Listeners
+        public void OnStatusChanged(object sender,ProgramStatus newValue)
+        {
+            Console.WriteLine("IsConnectionChanged :" + newValue.ToString());
+            Status = newValue;
+        }
         #endregion
         #region Implementations
         public event PropertyChangedEventHandler PropertyChanged;
