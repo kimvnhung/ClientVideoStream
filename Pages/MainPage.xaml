@@ -4,11 +4,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:viewmodels="clr-namespace:ClientVideoStream.ViewModels"
+      xmlns:converters="clr-namespace:ClientVideoStream.Converters"
       mc:Ignorable="d" 
       Height="450" 
       Width="800"
       Title="MainPage">
-
+    <Page.Resources>
+        <converters:BoolToConnectionStautsConverter x:Key="BoolToConnectionStatusConverter"/>
+    </Page.Resources>
     <Grid>
         <Grid.DataContext>
             <viewmodels:MainPageModel/>
@@ -35,7 +38,7 @@
         </Grid>
         <Button
             Grid.Row="1"
-            Content="Start"
+            Content="{Binding MainModel.IsConnected,Converter={StaticResource BoolToConnectionStatusConverter}}"
             Style="{StaticResource NormalButton}"
             Command="{Binding StartCommand,Mode=OneWay}"/>
     </Grid>

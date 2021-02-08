@@ -1,5 +1,6 @@
 ﻿using ClientVideoStream.Handlers;
 using ClientVideoStream.Models;
+using ClientVideoStream.Pages;
 using ClientVideoStream.ViewModels.Command;
 using System;
 using System.Collections.Generic;
@@ -70,7 +71,9 @@ namespace ClientVideoStream.ViewModels
                 {
                     Console.WriteLine("Starting streaming");
                     //to start open stream on Link
-                    _controller.SourceProvider.MediaPlayer.Play(new Uri($"rtsp://{MainModel.Link}:2020/test"));
+                    Uri uri = new Uri($"rtsp://{MainModel.Link}:2020/test");
+                    Console.WriteLine(uri);
+                    _controller.SourceProvider.MediaPlayer.Play(uri);
                 }
 
             }
@@ -81,28 +84,18 @@ namespace ClientVideoStream.ViewModels
         {
             Console.WriteLine(position);
         }
-
-        private async Task Play()
-        {
-            if(_controller != null)
-            {
-                _controller.SourceProvider.MediaPlayer.Play();
-            }
-        }
-
-        private async Task Pause()
-        {
-            if(_controller != null)
-            {
-                _controller.SourceProvider.MediaPlayer.Pause();
-            }
-        }
+       
 
         private async Task Stop()
         {
-            if(_controller != null)
+            if(_controller != null && _model.Status == ProgramStatus.STREAMING)
             {
-                _controller.SourceProvider.MediaPlayer.Stop();
+                var rs = await _model.StopStream();
+                if (rs)
+                {
+                    Console.WriteLine("Stopped");
+                    Session.Navigator.Navigate(new MainPage());
+                }
             }
         }
         #endregion

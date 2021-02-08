@@ -37,18 +37,28 @@ namespace ClientVideoStream.ViewModels
         #region Methods
         private async Task Start()
         {
-            if(_model.Link.Length > 0)
+            if (!_model.IsConnected)
             {
-                _model.Client = new ClientHandler(_model.Link);
-                var rs = await _model.EstablisConnection();
-                if (rs)
+                if (_model.Link.Length > 0)
                 {
-                    Session.Navigator.Navigate(new MediaPlayerPage());
+                    _model.Client = new ClientHandler(_model.Link);
+                    var rs = await _model.EstablisConnection();
+                    if (rs)
+                    {
+                        Session.Navigator.Navigate(new MediaPlayerPage());
+                    }
+                }
+                else
+                {
+                    Utils.showMessage("Địa chỉ rỗng!", "Thông báo!");
                 }
             }
             else
             {
-                Utils.showMessage("Địa chỉ rỗng!", "Thông báo!");
+                if(_model.Client != null && _model.Client.IsActive)
+                {
+                    _model.Client.StopConnection();
+                }
             }
         }
         #endregion

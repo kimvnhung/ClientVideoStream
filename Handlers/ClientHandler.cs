@@ -178,6 +178,7 @@ namespace ClientVideoStream.Handlers
                                     Utils.showMessage("Đang bắt đầu Stream tại địa chỉ RTSP://" + IPAddress.ToString() + ":" + Port, "Thông báo!");
                                     break;
                                 case Reply.Types.Header.StopStream:
+                                    OnIsStatusChanged(ProgramStatus.CONNECTED);
                                     Utils.showMessage("Đã ngừng Stream", "Thông báo!");
                                     break;
                                 case Reply.Types.Header.StartTracking:

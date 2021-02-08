@@ -154,11 +154,34 @@ namespace ClientVideoStream.Models
             if (IsConnected && Client.IsActive)
             {
                 Client.StartStream();
-                await Task.Delay(100);
-                if(Status == ProgramStatus.STREAMING)
+                int count = 0;
+                while(count++ < 1000)
                 {
-                    return true;
+                    if (Status == ProgramStatus.STREAMING)
+                    {
+                        return true;
+                    }
+                    await Task.Delay(100);
                 }
+            }
+            return false;
+        }
+
+        public async Task<bool> StopStream()
+        {
+            if(IsConnected && Client.IsActive)
+            {
+                Client.StopStream();
+                int count = 0;
+                while(count++ < 1000)
+                {
+                    if(Status == ProgramStatus.CONNECTED)
+                    {
+                        return true;
+                    }
+                    await Task.Delay(100);
+                }
+
             }
             return false;
         }
