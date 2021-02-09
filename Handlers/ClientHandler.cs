@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Google.Protobuf;
+using System.Windows;
 
 namespace ClientVideoStream.Handlers
 {
@@ -124,7 +125,7 @@ namespace ClientVideoStream.Handlers
                 this.Socket.Dispose();
                 this.Socket = null;
             }
-
+            OnIsStatusChanged(ProgramStatus.UNKNOWN);
             this.IsActive = false;
         }
 
@@ -171,21 +172,21 @@ namespace ClientVideoStream.Handlers
                             {
                                 case Reply.Types.Header.EstablishConnection:
                                     OnIsStatusChanged(ProgramStatus.CONNECTED);
-                                    Utils.showMessage("Thiết lập kết nối thành công", "Thông báo!");
+                                    MessageBox.Show("Thiết lập kết nối thành công", "Thông báo!");
                                     break;
                                 case Reply.Types.Header.StartStream:
                                     OnIsStatusChanged(ProgramStatus.STREAMING);
-                                    Utils.showMessage("Đang bắt đầu Stream tại địa chỉ RTSP://" + IPAddress.ToString() + ":" + Port, "Thông báo!");
+                                    MessageBox.Show("Đang bắt đầu Stream tại địa chỉ RTSP://" + IPAddress.ToString() + ":" + Port, "Thông báo!");
                                     break;
                                 case Reply.Types.Header.StopStream:
                                     OnIsStatusChanged(ProgramStatus.CONNECTED);
-                                    Utils.showMessage("Đã ngừng Stream", "Thông báo!");
+                                    MessageBox.Show("Đã ngừng Stream", "Thông báo!");
                                     break;
                                 case Reply.Types.Header.StartTracking:
-                                    Utils.showMessage("Bắt đầu tracking", "Thông báo!");
+                                    MessageBox.Show("Bắt đầu tracking", "Thông báo!");
                                     break;
                                 case Reply.Types.Header.StopTracking:
-                                    Utils.showMessage("Đã ngừng tracking", "Thông báo!");
+                                    MessageBox.Show("Đã ngừng tracking", "Thông báo!");
                                     break;
                                 default:
                                     break;
@@ -244,7 +245,8 @@ namespace ClientVideoStream.Handlers
             {
                 Command cmd = new Command();
                 cmd.Header = Command.Types.Header.StartStream;
-                cmd.Path = @"D:\hungkv2\StreamVideo\drap videos\test-video_1m12s.mp4";
+                cmd.Path = @"\\DESKTOP-95PS3EQ\drap videos\test-video_1m12s.mp4";
+                //cmd.Path = @"D:\hungkv2\StreamVideo\drap videos\test-video_1m12s.mp4";
                 SendCmd(cmd);
             }
         }

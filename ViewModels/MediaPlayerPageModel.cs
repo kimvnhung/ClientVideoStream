@@ -65,7 +65,10 @@ namespace ClientVideoStream.ViewModels
                 var currentDirectory = new FileInfo(currentAssembly.Location).DirectoryName;
                 // Default installation path of VideoLAN.LibVLC.Windows
                 var libDirectory = new DirectoryInfo(Path.Combine(currentDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
-                _controller.SourceProvider.CreatePlayer(libDirectory);
+                if(_controller.SourceProvider.MediaPlayer == null)
+                {
+                    _controller.SourceProvider.CreatePlayer(libDirectory);
+                }
                 var rs = await _model.StartStream();
                 if (rs)
                 {
@@ -93,6 +96,7 @@ namespace ClientVideoStream.ViewModels
                 var rs = await _model.StopStream();
                 if (rs)
                 {
+                    
                     Console.WriteLine("Stopped");
                     Session.Navigator.Navigate(new MainPage());
                 }

@@ -132,11 +132,11 @@ namespace ClientVideoStream.Models
         public async Task<bool> EstablisConnection()
         {
             Client.StartConnection();
-            int count = 5;
+            int count = 100;
             while (count-- > 0)
             {
                 Client.EstablishConnection();
-                await Task.Delay(100);
+                await Task.Delay(1000);
                 if (IsConnected)
                 {
                     break;
