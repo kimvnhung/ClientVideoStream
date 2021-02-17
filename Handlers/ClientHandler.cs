@@ -23,12 +23,14 @@ namespace ClientVideoStream.Handlers
             {
                 SourceUsername = "Client" + new Random().Next(1, 100).ToString();
                 IPAddress = IPAddress.Parse(server);
+                
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 IPAddress = IPAddress.Parse("127.0.0.1");
             }
+            Port = (ushort)myPort;
         }
 
         private bool isActive = false;
@@ -57,7 +59,7 @@ namespace ClientVideoStream.Handlers
         }
 
         public IPAddress IPAddress { get; set; }
-        public ushort Port { get => 2021; }
+        public ushort Port { get; set; }
         public IPEndPoint IPEndPoint { get { return new IPEndPoint(this.IPAddress, this.Port); } }
         public int ClientIdCounter { get; set; }
         public string SourceUsername { get; set; }
@@ -278,6 +280,20 @@ namespace ClientVideoStream.Handlers
                 Command cmd = new Command();
                 cmd.Header = Command.Types.Header.StopTracking;
                 SendCmd(cmd);
+            }
+        }
+
+        public void SendMessage(string msg)
+        {
+            if (IsActive)
+            {
+                try
+                {
+                    this.Socket.Send(Encoding.ASCII.GetBytes(msg));
+                }catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
         }
 
