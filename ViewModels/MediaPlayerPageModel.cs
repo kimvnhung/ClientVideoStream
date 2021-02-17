@@ -1,6 +1,4 @@
-﻿
-using Accord.Video.FFMPEG;
-using ClientVideoStream.Handlers;
+﻿using ClientVideoStream.Handlers;
 using ClientVideoStream.Models;
 using ClientVideoStream.Pages;
 using ClientVideoStream.ViewModels.Command;
@@ -17,8 +15,10 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Vlc.DotNet.Core;
 using Vlc.DotNet.Wpf;
+using WebEye.Controls.Wpf.StreamPlayerControl;
 
 namespace ClientVideoStream.ViewModels
 {
@@ -26,13 +26,15 @@ namespace ClientVideoStream.ViewModels
     {
         #region Members
         private MainModel _model;
-        private VlcControl _controller;
+        private StreamPlayerControl _controller;
 
         private string _command_contente = "";
         private ClientHandler _rtsp_client;
+        private RtspConsumer rtspConsumer;
         private BitmapImage _currentFrame;
 
-        private Thread _readingStreamThread;
+        private Thread _consumer_thread;
+
         #endregion
         #region Properties
 
@@ -83,12 +85,12 @@ namespace ClientVideoStream.ViewModels
 
         ~MediaPlayerPageModel()
         {
-            this._readingStreamThread = null;
+            this._consumer_thread = null;
         }
 
         #endregion
         #region Methods
-        public void SetController(VlcControl controller)
+        public void SetController(StreamPlayerControl controller)
         {
             this._controller = controller;
 
@@ -124,13 +126,36 @@ namespace ClientVideoStream.ViewModels
 
 
                 //}
-                
-                
+
+                this._consumer_thread = new Thread(new ThreadStart(delegate ()
+                {
+                    Console.WriteLine("Start Consumer");
+                    while (true)
+                    {
+                        try
+                        {
+                            Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => {
+                                Bitmap bmp = _controller.GetCurrentFrame();
+                                
+                                Console.WriteLine(bmp.Width);
+                            }));
+                            
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                    }
+                }));
                 var rs = await _model.StartStream();
+
                 if (rs)
                 {
                     Console.WriteLine("Start Reading Stream");
-                    ListenRTSP();
+                    //    //to start open stream on Link
+                    Uri uri = new Uri($"rtsp://{MainModel.Link}:2020/test");
+                    Console.WriteLine(uri);
+                    _controller.StartPlay(uri);
                 }
             }
 
@@ -138,25 +163,8 @@ namespace ClientVideoStream.ViewModels
 
         private async Task ListenRTSP()
         {
-            VideoFileReader reader = new VideoFileReader();
-            reader.Open("rtsp://" + MainModel.Link + ":2020/test");
-            while (true)
-            {
-                try
-                {
-                    Bitmap bmp = reader.ReadVideoFrame();
-                    //CurrentFrame = BitmapToImageSource(reader.ReadVideoFrame());
-                    //Console.WriteLine($"Bitmap Width :{bmp.Width}");
-                    //Console.WriteLine($"Bitmap Height :{bmp.Height}");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    break;
-                }
-
-            }
-            reader.Close();
+             
+            
         }
 
         public BitmapImage BitmapToImageSource(Bitmap bitmap)
@@ -208,7 +216,7 @@ namespace ClientVideoStream.ViewModels
                     Session.Navigator.Navigate(new MainPage());
                 }
             }
-            this._readingStreamThread = null;
+            this._consumer_thread = null;
         }
         #endregion
     }

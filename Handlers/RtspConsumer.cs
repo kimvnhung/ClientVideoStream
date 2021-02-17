@@ -2,28 +2,27 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using Google.Protobuf;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace ClientVideoStream.Handlers
 {
-    class ClientHandler : IOposition
+    class RtspConsumer : IOposition
     {
         public static string myIp = "192.168.0.101";
         public static int myPort = 2021;
-        public ClientHandler(string server)
+        public RtspConsumer(string server)
         {
             try
             {
                 SourceUsername = "Client" + new Random().Next(1, 100).ToString();
                 IPAddress = IPAddress.Parse(server);
-                
+
             }
             catch (Exception e)
             {
@@ -157,49 +156,8 @@ namespace ClientVideoStream.Handlers
                         {
                             data[i] = inf[i];
                         }
-
-                        //convert to protobuf object
-                        try
-                        {
-                            Reply reply = Reply.Parser.ParseFrom(data);
-                            LastMessage = reply.ToString();
-                            if (reply.Status == Reply.Types.Status.Fail)
-                            {
-                                if (reply.Description.Length > 0)
-                                {
-                                    Utils.showMessage(reply.Description, "Lỗi!");
-                                }
-                            }
-                            switch (reply.Header)
-                            {
-                                case Reply.Types.Header.EstablishConnection:
-                                    OnIsStatusChanged(ProgramStatus.CONNECTED);
-                                    MessageBox.Show("Thiết lập kết nối thành công", "Thông báo!");
-                                    break;
-                                case Reply.Types.Header.StartStream:
-                                    OnIsStatusChanged(ProgramStatus.STREAMING);
-                                    MessageBox.Show("Đang bắt đầu Stream tại địa chỉ RTSP://" + IPAddress.ToString() + ":" + Port, "Thông báo!");
-                                    break;
-                                case Reply.Types.Header.StopStream:
-                                    OnIsStatusChanged(ProgramStatus.CONNECTED);
-                                    MessageBox.Show("Đã ngừng Stream", "Thông báo!");
-                                    break;
-                                case Reply.Types.Header.StartTracking:
-                                    MessageBox.Show("Bắt đầu tracking", "Thông báo!");
-                                    break;
-                                case Reply.Types.Header.StopTracking:
-                                    MessageBox.Show("Đã ngừng tracking", "Thông báo!");
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.Message);
-                            Console.WriteLine(Utils.GetHeximal(data));
-                            LastMessage = Encoding.ASCII.GetString(data);
-                        }
+                        Console.WriteLine("OnReceive Data");
+                        Console.WriteLine(Utils.GetHeximal(data));
                         //replication
 
                     }
@@ -213,7 +171,7 @@ namespace ClientVideoStream.Handlers
                     Console.WriteLine(ex.Message);
                     if (ex.ErrorCode != 10004)
                     {
-                        
+
                         Utils.showMessage(ex.Message, "Lỗi");
                     }
 
@@ -226,62 +184,15 @@ namespace ClientVideoStream.Handlers
             }
         }
 
-        public void EstablishConnection()
-        {
-            if (IsActive)
-            {
-                Command cmd = new Command();
-                cmd.Header = Command.Types.Header.EstablishConnection;
-                Command.Types.Address addr = new Command.Types.Address();
-                addr.Ip = myIp;
-                addr.Port = myPort;
-                cmd.Address = addr;
-                Console.WriteLine(cmd.ToString());
-                SendCmd(cmd);
-            }
-        }
+        
 
-        public void StartStream()
-        {
-            if (IsActive)
-            {
-                Command cmd = new Command();
-                cmd.Header = Command.Types.Header.StartStream;
-                //cmd.Path = @"\\DESKTOP-95PS3EQ\drap videos\test-video_1m12s.mp4";
-                cmd.Path = @"D:\hungkv2\StreamVideo\drap videos\test-video_1m12s.mp4";
-                SendCmd(cmd);
-            }
-        }
+        
 
-        public void StopStream()
-        {
-            if (IsActive)
-            {
-                Command cmd = new Command();
-                cmd.Header = Command.Types.Header.StopStream;
-                SendCmd(cmd);
-            }
-        }
+        
 
-        public void StartTracking()
-        {
-            if (IsActive)
-            {
-                Command cmd = new Command();
-                cmd.Header = Command.Types.Header.StartTracking;
-                SendCmd(cmd);
-            }
-        }
+        
 
-        public void StopTracking()
-        {
-            if (IsActive)
-            {
-                Command cmd = new Command();
-                cmd.Header = Command.Types.Header.StopTracking;
-                SendCmd(cmd);
-            }
-        }
+        
 
         public void SendMessage(string msg)
         {
@@ -290,25 +201,15 @@ namespace ClientVideoStream.Handlers
                 try
                 {
                     this.Socket.Send(Encoding.ASCII.GetBytes(msg));
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
             }
         }
 
-        private void SendCmd(Command cmd)
-        {
-            try
-            {
-                this.Socket.Send(cmd.ToByteArray());
-                Console.WriteLine("Sending succes");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
+        
         public static bool IsSocketConnected(Socket socket)
         {
             if (!socket.Connected)

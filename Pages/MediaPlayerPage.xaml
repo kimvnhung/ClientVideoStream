@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:viewmodels="clr-namespace:ClientVideoStream.ViewModels"
       xmlns:Vlc="clr-namespace:Vlc.DotNet.Wpf;assembly=Vlc.DotNet.Wpf"
+      xmlns:webeye="clr-namespace:WebEye.Controls.Wpf.StreamPlayerControl;assembly=WebEye.Controls.Wpf.StreamPlayerControl"
       mc:Ignorable="d" 
       Height="450" 
       Width="800"
@@ -25,8 +26,10 @@
             <RowDefinition/>
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
-        <Image
-            Source="{Binding CurrentFrame}"/>
+        <webeye:StreamPlayerControl
+            Name="player"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"/>
         <StackPanel
             Orientation="Vertical"
             Margin="0 50"
