@@ -28,7 +28,7 @@ namespace ClientVideoStream.Pages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            ((MediaPlayerPageModel)MainGrid.DataContext).SetController(player);
+            ((MediaPlayerPageModel)MainGrid.DataContext).SetController(mediaController);
         }
 
         private void Page_KeyDown(object sender, KeyEventArgs e)

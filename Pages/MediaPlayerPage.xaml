@@ -26,10 +26,8 @@
             <RowDefinition/>
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
-        <webeye:StreamPlayerControl
-            Name="player"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"/>
+        <Vlc:VlcControl
+            Name="mediaController"/>
         <StackPanel
             Orientation="Vertical"
             Margin="0 50"
