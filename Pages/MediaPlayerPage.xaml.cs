@@ -31,12 +31,5 @@ namespace ClientVideoStream.Pages
             ((MediaPlayerPageModel)MainGrid.DataContext).SetController(mediaController);
         }
 
-        private void Page_KeyDown(object sender, KeyEventArgs e)
-        {
-            if(e.Key == Key.Enter)
-            {
-                ((MediaPlayerPageModel)MainGrid.DataContext).OnEnter();
-            }
-        }
     }
 }

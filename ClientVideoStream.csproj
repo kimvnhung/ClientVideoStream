@@ -93,6 +93,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\BoolToConnectionStautsConverter.cs" />
+    <Compile Include="DataTypes\FrameTrackingItem.cs" />
     <Compile Include="Handlers\ClientHandler.cs" />
     <Compile Include="Handlers\Command.cs" />
     <Compile Include="Handlers\IOposition.cs" />

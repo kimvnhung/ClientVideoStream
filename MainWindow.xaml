@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="MainWindow" 
-        Height="auto" 
+        Height="550" 
+        WindowStartupLocation="CenterScreen"
         Loaded="MainWindow_OnLoaded"
-        Width="auto">
+        Width="900">
     <Grid>
         <Frame 
             x:Name="MainFrame"

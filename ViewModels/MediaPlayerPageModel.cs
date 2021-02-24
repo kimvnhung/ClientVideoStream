@@ -22,6 +22,7 @@ using Vlc.DotNet.Wpf;
 using Vlc.DotNet.Core;
 using System.ComponentModel;
 using System.Windows.Threading;
+using ClientVideoStream.DataTypes;
 
 namespace ClientVideoStream.ViewModels
 {
@@ -31,12 +32,12 @@ namespace ClientVideoStream.ViewModels
         private MainModel _model;
         private VlcControl _controller;
 
-        private string _command_contente = "";
         private ClientHandler _rtsp_client;
-        private RtspConsumer rtspConsumer;
         private BitmapImage _currentFrame;
+        private FrameTrackingItem[] _itemsSource;
 
-        private Thread _consumer_thread;
+        private static int VideoWidth = 1072;
+        private static int VideoHeight = 1906;
 
         #endregion
         #region Properties
@@ -46,6 +47,19 @@ namespace ClientVideoStream.ViewModels
             get => this._model;
         }
 
+        public FrameTrackingItem[] ItemsSource
+        {
+            get => this._itemsSource;
+            set
+            {
+                if (!value.Equals(this._itemsSource))
+                {
+                    this._itemsSource = value;
+                    OnPropertyChanged(nameof(ItemsSource));
+                }
+            }
+        }
+
         public BitmapImage CurrentFrame
         {
             get => this._currentFrame;
@@ -53,19 +67,6 @@ namespace ClientVideoStream.ViewModels
             {
                 this._currentFrame = value;
                 OnPropertyChanged(nameof(CurrentFrame));
-            }
-        }
-
-        public string CommandContent
-        {
-            get => this._command_contente;
-            set
-            {
-                if (!value.Equals(this._command_contente))
-                {
-                    this._command_contente = value;
-                    OnPropertyChanged(nameof(CommandContent));
-                }
             }
         }
 
@@ -88,7 +89,7 @@ namespace ClientVideoStream.ViewModels
 
         ~MediaPlayerPageModel()
         {
-            this._consumer_thread = null;
+           
         }
 
         #endregion
@@ -126,11 +127,18 @@ namespace ClientVideoStream.ViewModels
                     Uri uri = new Uri($"rtsp://{MainModel.Link}:2020/test");
                     Console.WriteLine(uri);
                     _controller.SourceProvider.MediaPlayer.Play(uri);
-                    //_controller.SourceProvider.MediaPlayer.SetVideoFormatCallbacks(VideoFormat, null);
-                    _controller.SourceProvider.MediaPlayer.SetVideoCallbacks(LockVideo, null, DisplayVideo, IntPtr.Zero);
+                    _controller.SourceProvider.MediaPlayer.SetVideoCallbacks(LockVideo, UnlockVideo, DisplayVideo, IntPtr.Zero);
                     _controller.SourceProvider.MediaPlayer.Playing += delegate (object sender, VlcMediaPlayerPlayingEventArgs arg)
                     {
-                        
+                        if(_controller.SourceProvider.MediaPlayer.Time <= 100)
+                        {
+                            foreach (MediaTrack track in _controller.SourceProvider.MediaPlayer.GetMedia().Tracks)
+                            {
+                                Console.WriteLine(FourCCConverter.FromFourCC(track.CodecFourcc));
+                            }
+                           // VideoWidth = (_controller.SourceProvider.VideoSource as BitmapSource).PixelWidth;
+                            //VideoHeight = (_controller.SourceProvider.VideoSource as BitmapSource).PixelHeight;
+                        }
                     };
                     
                 }
@@ -156,74 +164,6 @@ namespace ClientVideoStream.ViewModels
         }
 
         /// <summary>
-        /// Called by vlc when the video format is needed. This method allocats the picture buffers for vlc and tells it to set the chroma to RV32
-        /// </summary>
-        /// <param name="userdata">The user data that will be given to the <see cref="LockVideo"/> callback. It contains the pointer to the buffer</param>
-        /// <param name="chroma">The chroma</param>
-        /// <param name="width">The visible width</param>
-        /// <param name="height">The visible height</param>
-        /// <param name="pitches">The buffer width</param>
-        /// <param name="lines">The buffer height</param>
-        /// <returns>The number of buffers allocated</returns>
-        private uint VideoFormat(out IntPtr userdata, IntPtr chroma, ref uint width, ref uint height, ref uint pitches, ref uint lines)
-        {
-            var pixelFormat = this._controller.IsAlphaChannelEnabled ? PixelFormats.Bgra32 : PixelFormats.Bgr32;
-            FourCCConverter.ToFourCC("RV32", chroma);
-
-            //Correct video width and height according to TrackInfo
-            var md = this._controller.SourceProvider.MediaPlayer.GetMedia();
-            foreach (MediaTrack track in md.Tracks)
-            {
-                if (track.Type == MediaTrackTypes.Video)
-                {
-                    var trackInfo = (VideoTrack)track.TrackInfo;
-                    if (trackInfo.Width > 0 && trackInfo.Height > 0)
-                    {
-                        width = trackInfo.Width;
-                        height = trackInfo.Height;
-                        if (trackInfo.SarDen != 0)
-                        {
-                            width = width * trackInfo.SarNum / trackInfo.SarDen;
-                        }
-                    }
-
-                    break;
-                }
-            }
-
-            pitches = GetAlignedDimension((uint)(width * pixelFormat.BitsPerPixel) / 8, 32);
-            lines = GetAlignedDimension(height, 32);
-
-            var size = pitches * lines;
-
-            IntPtr memoryMappedFile = Win32Interop.CreateFileMapping(new IntPtr(-1), IntPtr.Zero,
-                Win32Interop.PageAccess.ReadWrite, 0, (int)size, null);
-
-            IntPtr memoryMappedView = Win32Interop.MapViewOfFile(memoryMappedFile, Win32Interop.FileMapAccess.AllAccess, 0, 0, size);
-            var viewHandle = memoryMappedView;
-
-            userdata = viewHandle;
-            Console.WriteLine("Usersize: " + size);
-            return 1;
-        }
-
-
-        /// <summary>
-        /// Called by Vlc when it requires a cleanup
-        /// </summary>
-        /// <param name="userdata">The parameter is not used</param>
-        private void CleanupVideo(ref IntPtr userdata)
-        {
-            // This callback may be called by Dispose in the Dispatcher thread, in which case it deadlocks if we call RemoveVideo again in the same thread.
-            //if (!this._controller.SourceProvider.MediaPlayer)
-            //{
-            //    this.dispatcher.Invoke((Action)this.RemoveVideo);
-            //}
-        }
-
-        
-
-        /// <summary>
         /// Called by libvlc when it wants to acquire a buffer where to write
         /// </summary>
         /// <param name="userdata">The pointer to the buffer (the out parameter of the <see cref="VideoFormat"/> callback)</param>
@@ -231,13 +171,37 @@ namespace ClientVideoStream.ViewModels
         /// <returns>The pointer that is passed to the other callbacks as a picture identifier, this is not used</returns>
         private IntPtr LockVideo(IntPtr userdata, IntPtr planes)
         {
-            byte[] destination = new byte[1024];
-            Marshal.Copy(userdata, destination, 0, destination.Length);
+            byte[] destination = new byte[10240];
+            
             //Console.WriteLine(Utils.GetHeximal(destination));
             Marshal.WriteIntPtr(planes, userdata);
-            //Console.WriteLine("onLockVideo");
+            //var format = _controller.SourceProvider.IsAlphaChannelEnabled ? PixelFormats.Bgra32 : PixelFormats.Bgr32;
+            //long totalLength = VideoWidth * VideoHeight * format.BitsPerPixel / 8;//length in bytes
+            //Console.WriteLine("TotalLength : " + totalLength);
+            //byte[] data = new byte[totalLength];
+            //Marshal.Copy(planes, destination, 0, destination.Length);
+            //Bitmap bmp = GetDataPicture(VideoWidth, VideoHeight, destination, _controller.SourceProvider.IsAlphaChannelEnabled);
+            //Console.WriteLine("bmp : " + bmp.Size);
+            //Application.Current.Dispatcher.Invoke(() =>
+            //{
+            //    if (ItemsSource == null)
+            //    {
+            //        ItemsSource = new FrameTrackingItem[1];
+            //        ItemsSource[0] = new FrameTrackingItem(BitmapToImageSource(bmp), "demo position", "demo codec");
+            //    }
+            //});
+            Marshal.Copy(planes, destination, 0, destination.Length);
+            Console.WriteLine(Utils.GetHeximal(destination));
             
             return userdata;
+        }
+
+        private void UnlockVideo(IntPtr userData,IntPtr picture,IntPtr[] planes)
+        {
+            //ImageSource imageSource = _controller.SourceProvider.VideoSource;
+            //int width = (imageSource as BitmapSource).PixelWidth;
+            //int height = (imageSource as BitmapSource).PixelHeight;
+            
         }
 
         /// <summary>
@@ -254,6 +218,28 @@ namespace ClientVideoStream.ViewModels
             }));
         }
 
+        public Bitmap GetDataPicture(int w, int h, byte[] data,bool isArgb)
+        {
+            Bitmap pic = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    int arrayIndex = y * w + x;
+                    System.Drawing.Color c = System.Drawing.Color.FromArgb(
+                       data[arrayIndex],
+                       data[arrayIndex + 1],
+                       data[arrayIndex + 2],
+                       data[arrayIndex + 3]
+                    );
+                    pic.SetPixel(x, y, c);
+                }
+            }
+
+            return pic;
+        }
+
         public BitmapImage BitmapToImageSource(Bitmap bitmap)
         {
             using (MemoryStream memory = new MemoryStream())
@@ -267,21 +253,6 @@ namespace ClientVideoStream.ViewModels
                 bitmapimage.EndInit();
 
                 return bitmapimage;
-            }
-        }
-
-        public void OnEnter()
-        {
-            string cmd = CommandContent;
-            CommandContent = "";
-            if(_rtsp_client != null)
-            {
-                _rtsp_client.SendMessage(cmd);
-                Console.WriteLine("Sending... : " + cmd);
-            }
-            else
-            {
-                Console.WriteLine("RTSP Socket is not active!");
             }
         }
 
@@ -303,7 +274,6 @@ namespace ClientVideoStream.ViewModels
                     Session.Navigator.Navigate(new MainPage());
                 }
             }
-            this._consumer_thread = null;
         }
         #endregion
     }
