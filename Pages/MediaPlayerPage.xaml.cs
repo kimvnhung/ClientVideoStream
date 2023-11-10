@@ -30,5 +30,6 @@ namespace ClientVideoStream.Pages
         {
             ((MediaPlayerPageModel)MainGrid.DataContext).SetController(mediaController);
         }
+
     }
 }

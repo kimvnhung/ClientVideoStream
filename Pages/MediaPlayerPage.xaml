@@ -5,8 +5,9 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:viewmodels="clr-namespace:ClientVideoStream.ViewModels"
       xmlns:Vlc="clr-namespace:Vlc.DotNet.Wpf;assembly=Vlc.DotNet.Wpf"
+      xmlns:webeye="clr-namespace:WebEye.Controls.Wpf.StreamPlayerControl;assembly=WebEye.Controls.Wpf.StreamPlayerControl"
       mc:Ignorable="d" 
-      Height="450" 
+      Height="500" 
       Width="800"
       Loaded="Page_Loaded"
       Title="MediaPlayerPage">
@@ -16,29 +17,63 @@
         <Grid.DataContext>
             <viewmodels:MediaPlayerPageModel/>
         </Grid.DataContext>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="650"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="120"/>
         </Grid.RowDefinitions>
         <Vlc:VlcControl
             Name="mediaController"
-            />
-        <Grid
-            Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+            Width="640"
+            Height="360"/>
+        <StackPanel
+            Orientation="Vertical"
+            Margin="0 50"
+            Grid.Column="1">
             <Button
                 Content="Play"
                 Style="{StaticResource NormalButton}"
-                Command="{Binding StartCommand,Mode=OneWay}"/>
+                Command="{Binding StartCommand,Mode=OneWay}"
+                Margin="0 20"/>
             <Button
-                Grid.Column="1"
+                Grid.Row="1"
                 Content="Stop"
                 Style="{StaticResource NormalButton}"
-                Command="{Binding StopCommand,Mode=OneWay}"/>
-            
-        </Grid>
+                Command="{Binding StopCommand,Mode=OneWay}"
+                Margin="0 20"/>
+        </StackPanel>
+        <ListView
+            Name="frameTrackingList"
+            Margin="5"
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            ItemsSource="{Binding ItemsSource}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel 
+                        Orientation="Vertical"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch">
+                        <Image 
+                            Source="{Binding Image}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            Width="54"
+                            Height="96"/>
+                        <Label
+                            Content="{Binding Position}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"/>
+                        <Label
+                            Content="{Binding CodecInfor}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Page>
